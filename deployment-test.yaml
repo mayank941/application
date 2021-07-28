@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: List
+items:
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: kylie-fan-club
+      app.kubernetes.io/component: kylie-fan-club
+      app.kubernetes.io/instance: kylie-fan-club
+    name: kylie-fan-club
+  spec:
+    replicas: 3
+    revisionHistoryLimit: 10
+    selector:
+      deploymentconfig: kylie-fan-club
+    template:
+      metadata:
+        labels:
+          deploymentconfig: kylie-fan-club
+      spec:
+        containers:
+        - image: kylie-fan-club
+          imagePullPolicy: Always
+          name: kylie-fan-club
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          - containerPort: 8443
+            protocol: TCP
+    test: false
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - kylie-fan-club
+        from:
+          kind: ImageStreamTag
+          name: kylie-fan-club:test
+      type: ImageChange
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    labels:
+      app: kylie-fan-club
+      app.kubernetes.io/component: kylie-fan-club
+      app.kubernetes.io/instance: kylie-fan-club
+    name: kylie-fan-club
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    labels:
+      app: kylie-fan-club
+      app.kubernetes.io/component: kylie-fan-club
+      app.kubernetes.io/instance: kylie-fan-club
+    name: kylie-fan-club
+  spec:
+    port:
+      targetPort: 8080-tcp
+    tls:
+      termination: edge
+    to:
+      kind: Service
+      name: kylie-fan-club
+      weight: 100
+    wildcardPolicy: None
